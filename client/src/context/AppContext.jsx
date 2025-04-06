@@ -7,8 +7,8 @@ const AppContextProvider = (props)=>{
     const [user, setUser] = useState(null)
     
     const value={
-        user, setUser
-    }
+        user, setUser,
+    };
 
     return(
         <AppContext.Provider value={value}>
