@@ -15,7 +15,8 @@ const registerUser = async (req, res) => {
     return res.status(409).json({ message: "User already exists with this email." });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const salt = await bcrypt.genSalt(10)
+  const hashedPassword = await bcrypt.hash(password, salt);
 
   const newUser = await userModel.create({
     name,
@@ -71,35 +72,33 @@ const loginUser = async (req, res) => {
   });
 };
 
-  // Assuming user is already authenticated via middleware
+// Assuming user is already authenticated via middleware
 
-  const userCredit = async (req, res) => {
-    const user = req.user;
-  
-    if (user.creditBalance <= 0) {
-      return res.status(403).json({ message: "You have no credits left. Please recharge." });
-    }
-  
-    // Deduct one credit for generating image (or whatever action)
-    user.creditBalance -= 1;
-    await user.save();
-  
-    res.status(200).json({
-      message: "Credit used successfully.",
-      remainingCredits: user.creditBalance,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  };
-  
-  // Logout just tells client to remove token
-  const logoutUser = (req, res) => {
-    // If you're not using cookies, you just clear token client-side
-    res.status(200).json({ message: 'User logged out successfully' });
-  };
-  
-  export { registerUser, loginUser, userCredit, logoutUser };
+const userCredit = async (req, res) => {
+  const user = req.user;
+
+  if (user.creditBalance <= 0) {
+    return res.status(403).json({ message: "You have no credits left. Please recharge." });
+  }
+
+  await user.save();
+
+  res.status(200).json({
+    message: "Credit used successfully.",
+    remainingCredits: user.creditBalance,
+    user: {
+      id: user._id, 
+      name: user.name,
+      email: user.email,
+    },
+  });
+};
+
+// Logout just tells client to remove token
+const logoutUser = (req, res) => {
+  // If you're not using cookies, you just clear token client-side
+  res.status(200).json({ message: 'User logged out successfully' });
+};
+
+export { registerUser, loginUser, userCredit, logoutUser };
   

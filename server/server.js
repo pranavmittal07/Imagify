@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './config/mongodb.js';
-import router from './routes/userRoute.js';
+import router from './routes/userRoutes.js';
+import imageRouter from './routes/imageRoutes.js'
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -14,7 +15,9 @@ app.get('/', (req, res) => {
   res.send('API Working!');
 });
 
-app.use('/api', router); // ✅ Fixed path
+app.use('/api', router);
+app.use('/api/users', router);
+app.use('/api/images', imageRouter); 
 
 const startServer = async () => {
   try {
