@@ -22,14 +22,14 @@ const Login = () => {
           email,
           password,
         });
-        console.log("Login response:", data);
+        // console.log("Login response:", data);
 
         if (data.token && data.user) {
           setToken(data.token);
-          console.log("Saving token:", data.token);
+          // console.log("Saving token:", data.token);
           setUser(data.user);
           localStorage.setItem("token", data.token);
-          console.log("Localstorage after saving:", localStorage.getItem("token"));
+          // console.log("Localstorage after saving:", localStorage.getItem("token"));
           toast.success("Login successful!");
           setShowLogin(false);
         } else {
@@ -44,7 +44,7 @@ const Login = () => {
 
         if (data.token && data.user) {
           setToken(data.token);
-          console.log("Saving token:", data.token);
+          // console.log("Saving token:", data.token);
           setUser(data.user);
           localStorage.setItem("token", data.token);
           

@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export const AppContext = createContext();
 
@@ -9,39 +11,70 @@ const AppContextProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [credit, setCredit] = useState(false);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  
+  const authHeaders = () => ({
+    Authorization: `Bearer ${token}`,
+  });
+
+  const navigate = useNavigate();
 
   const loadCreditsData = async () => {
+    if (!token) return;
     try {
-        if (!token) return;
-        const { data } = await axios.get(`${backendUrl}/api/users/credit`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        console.log(data.remainingCredits, data)
-        if (data.remainingCredits !== undefined) {
-        setCredit(data.remainingCredits);
-        }
+      const { data } = await axios.get(`${backendUrl}/api/users/credit`, { headers: authHeaders() });
+      setCredit(data.remainingCredits);
     } catch (error) {
-        console.error("Error loading credits:", error.message);
+      const errData = error.response?.data;
+      setCredit(errData?.remainingCredits ?? 0);
+      console.error("Error loading credits:", errData?.message || error.message);
     }
-    };
-
+  };
 
   useEffect(() => {
     loadCreditsData();
   }, [token]);
 
-  const logout = async () => {
+  const generateImage = async (prompt) => {
     try {
-      await axios.post(`${backendUrl}/api/users/logout`, {}, {
-        headers: { token },
-      });
+      const res = await axios.post(
+        `${backendUrl}/api/images/generate`,
+        { prompt },
+        { headers: authHeaders()},
+      );
+      
+      const data = res.data;
+      // console.log(data)
+      if (data.success) {
+        loadCreditsData();
+        return data.image;
+      } else {
+        toast.error(data.message);
+        loadCreditsData();
+        if (data.creditBalance === 0) {
+          toast.info("You’ve run out of credits.");
+          navigate("/buy");
+        }
+      }
     } catch (error) {
-      console.warn("Logout request failed:", error.response?.data?.message || error.message);
+      console.error("Error generating images:", error.message);
+      toast.error("Image generation failed.");
+    }
+  };
+
+  const logout = async () => {
+    // console.log('Logging out...');
+
+    try {
+      await axios.post(
+        `${backendUrl}/api/users/logout`,
+        {},
+        { headers:authHeaders()}
+      );
+    } catch (error) {
+      console.error("Logout Failed", error.message);
+      toast.error("Logout failed.");
     }
 
-    // Always clear local state regardless of request success
     setToken(null);
     setUser(null);
     setCredit(false);
@@ -59,13 +92,10 @@ const AppContextProvider = ({ children }) => {
     setCredit,
     backendUrl,
     logout,
+    generateImage,
   };
 
-  return (
-    <AppContext.Provider value={value}>
-      {children}
-    </AppContext.Provider>
-  );
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export default AppContextProvider;

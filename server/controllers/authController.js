@@ -78,16 +78,27 @@ const userCredit = async (req, res) => {
   const user = req.user;
 
   if (user.creditBalance <= 0) {
-    return res.status(403).json({ message: "You have no credits left. Please recharge." });
+    return res.status(403).json({
+      success: false,
+      message: "You have no credits left. Please recharge.",
+      remainingCredits: user.creditBalance,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
   }
+
 
   await user.save();
 
-  res.status(200).json({
+  return res.status(200).json({
+    success: true,
     message: "Credit used successfully.",
     remainingCredits: user.creditBalance,
     user: {
-      id: user._id, 
+      id: user._id,
       name: user.name,
       email: user.email,
     },
