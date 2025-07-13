@@ -8,11 +8,22 @@ import imageRouter from './routes/imageRoutes.js'
 const PORT = process.env.PORT || 5000;
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',               // for local dev
+  'https://imagify-1qlx.onrender.com'    // your deployed frontend
+];
+
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // or your frontend port
-  credentials: true,
-}));
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}))
 
 app.get('/', (req, res) => {
   res.send('API Working!');
