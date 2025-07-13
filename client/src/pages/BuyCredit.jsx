@@ -50,8 +50,8 @@ const BuyCredit = () => {
         setShowLogin(true)
       }
 
-      const { data } = await axios.post(backendUrl, 'api/users/pay-razor', {planId}, {header: authHeaders()})
-
+      const { data } = await axios.post(`${backendUrl}/api/users/pay-razor`,{ planId },{ headers: authHeaders() });
+      console.log(data)
       if(data.success){
         initPay(data.order)
       }
@@ -82,7 +82,7 @@ const BuyCredit = () => {
               <span className='text-3xl font-medium'> ₹ {item.price} </span>/ {item.price} Credits
             </p>
 
-            <button onClick={()=>paymentRazorpay(item.id)} className='w-full bg-gray-800 text-white mt-8 text-sm rounded-md py-2.5 min-w-52 ' >{user ? 'Purchase':'Get Started'}</button>
+            <button onClick={()=>paymentRazorpay(item.id)} className='w-full bg-gray-800 text-white mt-8 text-sm cursor-pointer rounded-md py-2.5 min-w-52 ' >{user ? 'Purchase':'Get Started'}</button>
           </div>
         ))}
       </div>

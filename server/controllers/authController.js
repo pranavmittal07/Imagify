@@ -118,10 +118,11 @@ const razorpayInstance = new razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-const paymenyRazorpay = async(req,res) => {
+const paymentRazorpay = async(req,res) => {
   try{
+    const userId = req.user._id
+    const { planId } = req.body;
 
-    const {userId, planId} = req.body;
     const userData = await userModel.findById(userId)
 
     if(!userId || !planId){
@@ -134,19 +135,19 @@ const paymenyRazorpay = async(req,res) => {
       case 'Basic':
         plan = 'Basic'
         credits = 100
-        amount = 10
+        amount = 1000
         break;
       
       case 'Advanced':
         plan = 'Advanced'
         credits = 500
-        amount = 50
+        amount = 5000
         break;
 
-      case 'Advanced':
-        plan = 'Advanced'
+      case 'Business':
+        plan = 'Business'
         credits = 5000
-        amount = 500
+        amount = 25000
         break;
       
       default:
@@ -162,12 +163,12 @@ const paymenyRazorpay = async(req,res) => {
     const newTransaction = await transactionalModel.create(transactionData)
 
     const options = {
-      amount : amount * 100,
+      amount : amount*100,
       currency: process.env.CURRENCY,
       receipt: newTransaction._id,
     }
 
-    await razorpayInstance.orders.create(SchemaTypeOptions, (error, order)=>{
+    await razorpayInstance.orders.create(options, (error, order)=>{
       if(error){
         console.log(error);
         return res.json({success: false, message: error})
@@ -212,5 +213,5 @@ const verifyRazorpay = async(req,res)=>{
   }
 }
 
-export { registerUser, loginUser, userCredit, logoutUser, paymenyRazorpay, verifyRazorpay};
+export { registerUser, loginUser, userCredit, logoutUser, paymentRazorpay, verifyRazorpay};
   
